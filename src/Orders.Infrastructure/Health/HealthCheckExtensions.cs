@@ -1,13 +1,17 @@
 using System.Net.Mime;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Orders.Api.Health;
+namespace Orders.Infrastructure.Health;
 
 public static class HealthCheckExtensions
 {
-    /// <summary>Checks executados em /health/ready (dependências externas).</summary>
+    /// <summary>Checks executados em /health/ready (dependências externas: PostgreSQL e RabbitMQ).</summary>
     public const string ReadyTag = "ready";
 
     /// <summary>Checks executados em /health/live (o próprio processo).</summary>
@@ -18,7 +22,11 @@ public static class HealthCheckExtensions
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
-    public static IHealthChecksBuilder AddOrdersApiHealthChecks(this IServiceCollection services, string connectionString) =>
+    /// <summary>
+    /// Registra os checks do processo e do PostgreSQL. O check do RabbitMQ ("masstransit-bus")
+    /// é registrado automaticamente pelo MassTransit com a tag "ready".
+    /// </summary>
+    public static IHealthChecksBuilder AddOrdersHealthChecks(this IServiceCollection services, string connectionString) =>
         services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: [LiveTag])
             .AddNpgSql(connectionString, name: "postgres", tags: [ReadyTag], timeout: TimeSpan.FromSeconds(3));

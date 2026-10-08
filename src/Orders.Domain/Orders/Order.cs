@@ -61,17 +61,21 @@ public sealed class Order
     /// Avança o pedido para o próximo status, registrando o histórico.
     /// Qualquer salto ou retrocesso na sequência Pendente → Processando → Finalizado é rejeitado.
     /// </summary>
+    /// <returns>O registro de histórico da transição.</returns>
     /// <exception cref="InvalidStatusTransitionException">Quando a transição não é permitida.</exception>
-    public void TransitionTo(OrderStatus next, DateTimeOffset now)
+    public OrderStatusHistory TransitionTo(OrderStatus next, DateTimeOffset now)
     {
         if (!CanTransitionTo(next))
         {
             throw new InvalidStatusTransitionException(Id, Status, next);
         }
 
-        _statusHistory.Add(new OrderStatusHistory(Id, Status, next, now));
+        var entry = new OrderStatusHistory(Id, Status, next, now);
+        _statusHistory.Add(entry);
         Status = next;
         UpdatedAt = now;
+
+        return entry;
     }
 
     private static string Required(string value, string field, int maxLength)

@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Orders.Domain.Orders;
 
@@ -12,5 +13,10 @@ public sealed class OrdersDbContext(DbContextOptions<OrdersDbContext> options) :
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrdersDbContext).Assembly);
+
+        // Tabelas do Transactional Outbox/Inbox do MassTransit.
+        modelBuilder.AddInboxStateEntity(entity => entity.ToTable("inbox_state"));
+        modelBuilder.AddOutboxMessageEntity(entity => entity.ToTable("outbox_message"));
+        modelBuilder.AddOutboxStateEntity(entity => entity.ToTable("outbox_state"));
     }
 }

@@ -1,7 +1,9 @@
+using MassTransit;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Orders.Domain.Orders;
+using Orders.Infrastructure.Messaging;
 using Orders.Infrastructure.Persistence;
 
 namespace Orders.Api.Features.Orders;
@@ -34,6 +36,7 @@ public static class OrderEndpoints
     internal static async Task<Created<OrderResponse>> CreateAsync(
         CreateOrderRequest request,
         OrdersDbContext db,
+        IPublishEndpoint publishEndpoint,
         TimeProvider clock,
         CancellationToken cancellationToken)
     {
@@ -41,6 +44,10 @@ public static class OrderEndpoints
         var order = Order.Create(request.Cliente!, request.Produto!, request.Valor!.Value, clock.GetUtcNow());
 
         db.Orders.Add(order);
+
+        // Bus Outbox: a mensagem é gravada na tabela outbox_message e commitada junto com o pedido
+        // em SaveChanges; um serviço em background a entrega ao RabbitMQ. Sem pedido órfão nem mensagem perdida.
+        await publishEndpoint.Publish(order.ToCreatedEvent(), cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
 
         return TypedResults.Created($"/orders/{order.Id}", order.ToResponse());
