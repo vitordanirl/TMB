@@ -1,0 +1,147 @@
+# Ambiente completo do sistema de pedidos.
+#
+#   docker compose --env-file .env.example up -d --build   # usa os valores de exemplo
+#   cp .env.example .env && docker compose up -d --build   # ou personalize no .env
+#
+# Nenhuma credencial fica neste arquivo: tudo vem de variáveis de ambiente (.env).
+
+name: tmb-orders
+
+x-dotnet-app: &dotnet-app
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+    migrator:
+      condition: service_completed_successfully
+
+x-app-environment: &app-environment
+  ConnectionStrings__Orders: Host=postgres;Port=5432;Database=${POSTGRES_DB:?defina no .env};Username=${POSTGRES_USER:?defina no .env};Password=${POSTGRES_PASSWORD:?defina no .env}
+  ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:?defina no .env}:${RABBITMQ_PASSWORD:?defina no .env}@rabbitmq:5672/
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4.3-management-alpine
+    restart: unless-stopped
+    hostname: rabbitmq # o nome do nó (e os dados no volume) dependem do hostname
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  # Aplica as migrations do EF Core e termina. API e worker só sobem após sucesso.
+  migrator:
+    build:
+      context: .
+      target: migrator
+    environment:
+      ConnectionStrings__Orders: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *dotnet-app
+    build:
+      context: .
+      target: api
+    environment:
+      <<: *app-environment
+      Cors__AllowedOrigins__0: http://localhost:${WEB_PORT:-3000}
+      Cors__AllowedOrigins__1: http://localhost:5173
+    ports:
+      - "${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *dotnet-app
+    build:
+      context: .
+      target: worker
+    environment:
+      <<: *app-environment
+      OrderProcessing__CompletionDelay: ${ORDER_COMPLETION_DELAY:-00:00:05}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # Interface de administração do banco. Modo desktop (sem tela de login), com o
+  # servidor "Orders" já registrado: servers.json e pgpass são gerados a partir do .env.
+  pgadmin:
+    image: dpage/pgadmin4:9.18
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:?defina no .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?defina no .env}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_SERVER_JSON_FILE: /tmp/servers.json
+      PGADMIN_LISTEN_PORT: "80"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        printf 'postgres:5432:*:%s:%s\n' "$$POSTGRES_USER" "$$POSTGRES_PASSWORD" > /tmp/pgpass
+        chmod 600 /tmp/pgpass
+        printf '{"Servers":{"1":{"Name":"Orders","Group":"TMB","Host":"postgres","Port":5432,"MaintenanceDB":"%s","Username":"%s","PassFile":"/tmp/pgpass","SSLMode":"prefer"}}}' "$$POSTGRES_DB" "$$POSTGRES_USER" > /tmp/servers.json
+        exec /entrypoint.sh
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/misc/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  pgadmin-data:
