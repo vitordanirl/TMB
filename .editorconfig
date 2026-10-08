@@ -49,3 +49,8 @@ dotnet_diagnostic.IDE0005.severity = warning     # usings desnecessários
 [tests/**.cs]
 dotnet_diagnostic.CA1707.severity = none         # underscores em nomes de teste
 dotnet_diagnostic.CA2007.severity = none
+
+# Código gerado pelo EF Core: não aplicar regras de estilo/analyzers
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
