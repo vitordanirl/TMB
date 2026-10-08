@@ -16,13 +16,14 @@ Para personalizar portas/credenciais, copie `cp .env.example .env`, ajuste e rod
 
 | Serviço | URL | Observação |
 |---|---|---|
+| **Frontend** | http://localhost:3000 | lista, criação e detalhes dos pedidos |
 | API | http://localhost:8080 | `/orders`, `/health/live`, `/health/ready` |
 | Documentação da API | http://localhost:8080/docs | Scalar (OpenAPI em `/openapi/v1.json`) |
 | RabbitMQ Management | http://localhost:15672 | usuário/senha: `RABBITMQ_USER` / `RABBITMQ_PASSWORD` |
 | pgAdmin | http://localhost:5050 | sem login; servidor "Orders" já registrado |
 | PostgreSQL | localhost:5432 | credenciais `POSTGRES_*` do `.env` |
 
-Ordem de subida (garantida por healthchecks): `postgres` + `rabbitmq` → `migrator` (aplica as migrations e encerra) → `api` + `worker`.
+Ordem de subida (garantida por healthchecks): `postgres` + `rabbitmq` → `migrator` (aplica as migrations e encerra) → `api` + `worker` → `web`.
 
 ```bash
 docker compose ps          # status/saúde dos serviços
@@ -39,6 +40,7 @@ src/
   Orders.Infrastructure/  EF Core, migrations, MassTransit/Outbox, health checks
   Orders.Api/             API REST
   Orders.Worker/          Consumidores que processam os pedidos
+web/                      Frontend React + Vite + TypeScript (servido por nginx)
 tests/
   Orders.UnitTests/
   Orders.IntegrationTests/
@@ -57,3 +59,15 @@ dotnet test Orders.slnx
 ```
 
 As apps leem `ConnectionStrings__Orders` e `ConnectionStrings__RabbitMq` de variáveis de ambiente.
+
+### Frontend
+
+Requer Node.js 20+. Com a API rodando em `localhost:8080` (via compose ou SDK):
+
+```bash
+cd web
+npm ci
+npm run dev        # http://localhost:5173 (proxy de /api e /hubs para a API)
+npm test           # testes (Vitest + Testing Library)
+npm run lint && npm run typecheck
+```

@@ -104,6 +104,23 @@ services:
       retries: 5
       start_period: 20s
 
+  # Frontend React servido por nginx; /api e /hubs são encaminhados para a API.
+  web:
+    build:
+      context: ./web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
   # Interface de administração do banco. Modo desktop (sem tela de login), com o
   # servidor "Orders" já registrado: servers.json e pgpass são gerados a partir do .env.
   pgadmin:
