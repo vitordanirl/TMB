@@ -2,3 +2,7 @@
 *.{cmd,bat,ps1} text eol=crlf
 *.docx binary
 *.png binary
+
+# Snapshots do Verify (golden tests): comparação byte a byte, sempre UTF-8 com BOM e LF
+*.verified.txt text eol=lf working-tree-encoding=UTF-8
+*.verified.json text eol=lf working-tree-encoding=UTF-8

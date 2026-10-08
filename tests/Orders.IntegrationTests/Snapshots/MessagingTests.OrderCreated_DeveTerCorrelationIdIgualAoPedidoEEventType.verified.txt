@@ -1,0 +1,23 @@
+﻿{
+  messageId: Guid_1,
+  requestId: null,
+  correlationId: Guid_2,
+  initiatorId: null,
+  responseAddress: null,
+  faultAddress: null,
+  messageType: [
+    urn:message:Orders.Contracts:OrderCreated,
+    urn:message:Orders.Contracts:IOrderMessage
+  ],
+  message: {
+    orderId: Guid_2,
+    customer: Carla,
+    product: Cadeira,
+    amount: 1899.90,
+    createdAt: DateTimeOffset_1
+  },
+  expirationTime: null,
+  headers: {
+    EventType: OrderCreated
+  }
+}

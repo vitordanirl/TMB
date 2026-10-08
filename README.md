@@ -63,6 +63,18 @@ dotnet test Orders.slnx
 
 As apps leem `ConnectionStrings__Orders` e `ConnectionStrings__RabbitMq` de variáveis de ambiente.
 
+### Testes
+
+```bash
+dotnet test Orders.slnx
+```
+
+- **Unitários** (`tests/Orders.UnitTests`): regras de domínio e observabilidade.
+- **Integração** (`tests/Orders.IntegrationTests`): sobem PostgreSQL e RabbitMQ reais em containers descartáveis (Testcontainers — requer Docker) e rodam API e Worker em processo. Cobrem o ciclo completo do pedido, idempotência (mesma mensagem 2x e duplicatas concorrentes), metadados das mensagens e health checks.
+- **Golden tests** (Verify): respostas da API, documento OpenAPI e envelope das mensagens comparados com snapshots aprovados em `tests/Orders.IntegrationTests/Snapshots`. Se o contrato mudar intencionalmente, revise o `*.received.txt` gerado e renomeie-o para `*.verified.txt`.
+
+
+
 ### Frontend
 
 Requer Node.js 20+. Com a API rodando em `localhost:8080` (via compose ou SDK):

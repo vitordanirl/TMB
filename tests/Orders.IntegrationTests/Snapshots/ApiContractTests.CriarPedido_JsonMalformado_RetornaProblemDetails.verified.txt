@@ -1,0 +1,6 @@
+﻿{
+  type: https://tools.ietf.org/html/rfc9110#section-15.5.1,
+  title: Requisição inválida.,
+  status: 400,
+  detail: O corpo da requisição não pôde ser interpretado. Verifique o JSON enviado.
+}

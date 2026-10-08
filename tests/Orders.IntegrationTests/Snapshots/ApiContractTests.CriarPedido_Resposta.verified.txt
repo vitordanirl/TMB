@@ -1,0 +1,9 @@
+﻿{
+  id: Guid_1,
+  cliente: Golden,
+  produto: Snapshot,
+  valor: 123.45,
+  status: Pendente,
+  data_criacao: DateTimeOffset_1,
+  data_atualizacao: DateTimeOffset_1
+}

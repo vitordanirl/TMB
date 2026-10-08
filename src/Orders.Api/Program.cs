@@ -33,6 +33,10 @@ builder.Services.AddSignalR().AddJsonProtocol(options =>
     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+// Por padrão, só em Development os minimal APIs lançam BadHttpRequestException para corpo/parâmetros
+// malformados; nos demais ambientes respondem um 400 genérico. Lançando sempre, o ApiExceptionHandler
+// produz o mesmo ProblemDetails em qualquer ambiente.
+builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
 builder.Services.AddValidation();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsConventions.Apply);
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();

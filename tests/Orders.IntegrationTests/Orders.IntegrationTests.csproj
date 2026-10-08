@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
@@ -9,11 +14,16 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="VerifyTests" />
+    <Using Include="VerifyXunit" />
+    <Using Include="VerifyXunit.Verifier" Static="true" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Orders.Api\Orders.Api.csproj" />
-    <ProjectReference Include="..\..\src\Orders.Worker\Orders.Worker.csproj" />
+    <!-- API e Worker têm um "Program" de top-level statements no namespace global; o alias evita a ambiguidade. -->
+    <ProjectReference Include="..\..\src\Orders.Worker\Orders.Worker.csproj" Aliases="worker" />
+    <ProjectReference Include="..\..\src\Orders.Infrastructure\Orders.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
