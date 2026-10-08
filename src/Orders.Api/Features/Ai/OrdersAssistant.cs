@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Anthropic;
@@ -31,6 +30,9 @@ public sealed partial class OrdersAssistant(
 {
     private const string FallbackBeta = "server-side-fallback-2026-07-01";
     private const int MaxResponseTokens = 16_000;
+
+    // Nomes fixos: a imagem Alpine roda em modo de globalização invariante (sem ICU), sem pt-BR.
+    private static readonly string[] WeekdaysPt = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
 
     private const string RefusalAnswer =
         "Não consigo responder a essa pergunta. Tente perguntar sobre os pedidos (quantidades, valores, status ou tempos de processamento).";
@@ -137,14 +139,13 @@ public sealed partial class OrdersAssistant(
     private string SystemPrompt()
     {
         var now = clock.Now;
-        var culture = CultureInfo.GetCultureInfo("pt-BR");
 
         return $"""
             Você é o assistente de análise do sistema de gestão de pedidos. Responda perguntas sobre os pedidos
             usando somente os dados retornados pelas ferramentas disponíveis.
 
             Contexto:
-            - Data e hora atuais: {now.ToString("dddd, dd/MM/yyyy HH:mm", culture)} (horário de Brasília, {BusinessClock.TimeZoneId}). Hoje é {now:yyyy-MM-dd}.
+            - Data e hora atuais: {WeekdaysPt[(int)now.DayOfWeek]}, {now:dd/MM/yyyy HH:mm} (horário de Brasília, {BusinessClock.TimeZoneId}). Hoje é {now:yyyy-MM-dd}.
             - Cada pedido tem cliente, produto, valor (R$), status e data de criação.
             - O ciclo de status é Pendente → Processando → Finalizado. "Aprovado", "concluído" ou "processado" equivalem a Finalizado.
             - Períodos como "hoje", "esta semana" e "este mês" referem-se à data de criação, no horário de Brasília.
