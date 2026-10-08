@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router'
 import { ApiError } from '@/api/client'
 import { Layout } from '@/components/Layout'
+import { AssistantPage } from '@/pages/AssistantPage'
 import { NewOrderPage } from '@/pages/NewOrderPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { OrderDetailsPage } from '@/pages/OrderDetailsPage'
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path: 'pedidos', element: <OrdersPage /> },
       { path: 'pedidos/novo', element: <NewOrderPage /> },
       { path: 'pedidos/:id', element: <OrderDetailsPage /> },
+      { path: 'assistente', element: <AssistantPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

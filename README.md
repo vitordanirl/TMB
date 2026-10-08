@@ -34,6 +34,17 @@ docker compose logs -f worker
 docker compose down        # para tudo (use -v para apagar os dados)
 ```
 
+### Pergunte sobre os pedidos (IA, opcional)
+
+Em **http://localhost:3000/assistente**, perguntas em linguagem natural como "Quantos pedidos estão pendentes?" ou "Qual o valor total de pedidos finalizados este mês?" são respondidas com dados reais. Para habilitar, defina a chave da Anthropic no `.env` e recrie a API:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...   # no .env
+docker compose up -d api
+```
+
+Sem a chave, o módulo fica desativado (`/ai/ask` responde 503 e a tela explica como configurar). O modelo (`AI_MODEL`, padrão `claude-opus-5-5`) e o esforço de raciocínio (`AI_EFFORT`, padrão `low`) também são configuráveis. A IA não escreve SQL: ela escolhe entre ferramentas somente leitura (contar, somar, tempo médio e listar pedidos) cujos parâmetros são validados pela API.
+
 ## Estrutura
 
 ```

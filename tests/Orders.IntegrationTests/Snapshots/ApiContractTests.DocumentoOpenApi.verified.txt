@@ -149,10 +149,152 @@
           }
         }
       }
+    },
+    /ai/status: {
+      get: {
+        tags: [
+          IA
+        ],
+        summary: Indica se o módulo de IA está configurado,
+        operationId: GetAiStatus,
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/AiStatusResponse
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    /ai/ask: {
+      post: {
+        tags: [
+          IA
+        ],
+        summary: Responde perguntas em linguagem natural sobre os pedidos, consultando os dados reais,
+        operationId: AskAboutOrders,
+        requestBody: {
+          content: {
+            application/json: {
+              schema: {
+                $ref: #/components/schemas/AskRequest
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          200: {
+            description: OK,
+            content: {
+              application/json: {
+                schema: {
+                  $ref: #/components/schemas/AssistantAnswer
+                }
+              }
+            }
+          },
+          400: {
+            description: Bad Request,
+            content: {
+              application/problem+json: {
+                schema: {
+                  $ref: #/components/schemas/HttpValidationProblemDetails
+                }
+              }
+            }
+          },
+          429: {
+            description: Too Many Requests,
+            content: {
+              application/problem+json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          502: {
+            description: Bad Gateway,
+            content: {
+              application/problem+json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          },
+          503: {
+            description: Service Unavailable,
+            content: {
+              application/problem+json: {
+                schema: {
+                  $ref: #/components/schemas/ProblemDetails
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   components: {
     schemas: {
+      AiStatusResponse: {
+        required: [
+          habilitado,
+          modelo
+        ],
+        type: object,
+        properties: {
+          habilitado: {
+            type: boolean
+          },
+          modelo: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      AskRequest: {
+        required: [
+          pergunta
+        ],
+        type: object,
+        properties: {
+          pergunta: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      AssistantAnswer: {
+        required: [
+          resposta,
+          consultas
+        ],
+        type: object,
+        properties: {
+          resposta: {
+            type: string
+          },
+          consultas: {
+            type: array,
+            items: {
+              $ref: #/components/schemas/ToolCall
+            }
+          }
+        }
+      },
       CreateOrderRequest: {
         required: [
           cliente,
@@ -405,12 +547,73 @@ Pendente → Processando → Finalizado.
             format: int32
           }
         }
+      },
+      ProblemDetails: {
+        type: object,
+        properties: {
+          type: {
+            type: [
+              null,
+              string
+            ]
+          },
+          title: {
+            type: [
+              null,
+              string
+            ]
+          },
+          status: {
+            pattern: ^-?(?:0|[1-9]\d*)$,
+            type: [
+              null,
+              integer,
+              string
+            ],
+            format: int32
+          },
+          detail: {
+            type: [
+              null,
+              string
+            ]
+          },
+          instance: {
+            type: [
+              null,
+              string
+            ]
+          }
+        }
+      },
+      ToolCall: {
+        required: [
+          ferramenta,
+          argumentos,
+          erro
+        ],
+        type: object,
+        properties: {
+          ferramenta: {
+            type: string
+          },
+          argumentos: {
+            type: object
+          },
+          erro: {
+            type: boolean
+          }
+        },
+        description: Uma consulta feita pelo modelo durante a resposta (exibida ao usuário para transparência).
       }
     }
   },
   tags: [
     {
       name: Pedidos
+    },
+    {
+      name: IA
     }
   ]
 }

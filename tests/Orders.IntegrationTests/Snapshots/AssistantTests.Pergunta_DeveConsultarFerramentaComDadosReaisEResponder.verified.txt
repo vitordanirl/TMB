@@ -1,0 +1,279 @@
+﻿{
+  anthropic_beta: server-side-fallback-2026-07-01,
+  primeira_chamada: {
+    model: claude-opus-5-5,
+    max_tokens: 16000,
+    fallbacks: default,
+    output_config: {
+      effort: low
+    },
+    tools: [
+      {
+        name: contar_pedidos,
+        description: Conta pedidos, opcionalmente filtrando por status e por período de criação.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: somar_valor_pedidos,
+        description: Soma o valor (R$) dos pedidos e informa quantos foram somados, opcionalmente filtrando por status e período de criação.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: tempo_medio_processamento,
+        description: Tempos médios dos pedidos já finalizados criados no período, calculados pelo histórico de status: total (criação até finalização, isto é, o tempo para aprovar/concluir um pedido), espera (criação até início do processamento) e processamento (início do processamento até finalização). Valores em segundos.,
+        input_schema: {
+          type: object,
+          properties: {
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: listar_pedidos,
+        description: Lista os pedidos mais recentes (cliente, produto, valor, status e data de criação), opcionalmente filtrando por status e período.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            },
+            limite: {
+              type: integer,
+              minimum: 1,
+              maximum: 20,
+              description: Quantidade máxima de pedidos (1 a 20, padrão 10).
+            }
+          }
+        }
+      }
+    ],
+    messages: [
+      {
+        role: user,
+        content: Quantos pedidos pendentes tivemos em 15/01/2020?
+      }
+    ]
+  },
+  segunda_chamada: {
+    model: claude-opus-5-5,
+    max_tokens: 16000,
+    fallbacks: default,
+    output_config: {
+      effort: low
+    },
+    tools: [
+      {
+        name: contar_pedidos,
+        description: Conta pedidos, opcionalmente filtrando por status e por período de criação.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: somar_valor_pedidos,
+        description: Soma o valor (R$) dos pedidos e informa quantos foram somados, opcionalmente filtrando por status e período de criação.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: tempo_medio_processamento,
+        description: Tempos médios dos pedidos já finalizados criados no período, calculados pelo histórico de status: total (criação até finalização, isto é, o tempo para aprovar/concluir um pedido), espera (criação até início do processamento) e processamento (início do processamento até finalização). Valores em segundos.,
+        input_schema: {
+          type: object,
+          properties: {
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            }
+          }
+        }
+      },
+      {
+        name: listar_pedidos,
+        description: Lista os pedidos mais recentes (cliente, produto, valor, status e data de criação), opcionalmente filtrando por status e período.,
+        input_schema: {
+          type: object,
+          properties: {
+            status: {
+              type: string,
+              enum: [
+                Pendente,
+                Processando,
+                Finalizado
+              ],
+              description: Filtra pelo status atual do pedido. Omita para considerar todos.
+            },
+            data_inicio: {
+              type: string,
+              format: date,
+              description: Primeiro dia do período (AAAA-MM-DD, inclusivo, horário de Brasília), pela data de criação do pedido. Omita para não limitar o início.
+            },
+            data_fim: {
+              type: string,
+              format: date,
+              description: Último dia do período (AAAA-MM-DD, inclusivo, horário de Brasília). Omita para não limitar o fim.
+            },
+            limite: {
+              type: integer,
+              minimum: 1,
+              maximum: 20,
+              description: Quantidade máxima de pedidos (1 a 20, padrão 10).
+            }
+          }
+        }
+      }
+    ],
+    messages: [
+      {
+        role: user,
+        content: Quantos pedidos pendentes tivemos em 15/01/2020?
+      },
+      {
+        role: assistant,
+        content: [
+          {
+            type: tool_use,
+            id: toolu_01,
+            name: contar_pedidos,
+            input: {
+              status: Pendente,
+              data_inicio: 2020-01-15,
+              data_fim: 2020-01-15
+            }
+          }
+        ]
+      },
+      {
+        role: user,
+        content: [
+          {
+            type: tool_result,
+            tool_use_id: toolu_01,
+            content: {"total":2,"filtros":{"status":"Pendente","data_inicio":"2020-01-15","data_fim":"2020-01-15"}},
+            is_error: false
+          }
+        ]
+      }
+    ]
+  }
+}

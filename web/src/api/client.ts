@@ -27,12 +27,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export interface ApiFetchInit extends RequestInit {
+  /** Sobrescreve o timeout padrão (ex.: respostas da IA, que levam mais tempo). */
+  timeoutMs?: number
+}
+
+export async function apiFetch<T>(path: string, { timeoutMs = REQUEST_TIMEOUT_MS, ...init }: ApiFetchInit = {}): Promise<T> {
   let response: Response
 
   // Sem timeout, uma requisição pendurada (ex.: backend fora do ar) bloquearia o polling,
   // já que o TanStack Query não dispara um novo fetch enquanto o anterior não termina.
-  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  const timeout = AbortSignal.timeout(timeoutMs)
   const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout
 
   try {

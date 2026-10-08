@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Orders.Api.ErrorHandling;
+using Orders.Api.Features.Ai;
 using Orders.Api.Features.Orders;
 using Orders.Api.Realtime;
 using Orders.Infrastructure;
@@ -42,6 +43,7 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddOpenApi();
 builder.Services.AddOrdersHealthChecks(connectionString);
+builder.Services.AddOrdersAssistant(builder.Configuration);
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy => policy
@@ -55,6 +57,7 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseCors(CorsPolicy);
+app.UseRateLimiter();
 
 // Documentação habilitada em todos os ambientes por se tratar de um desafio técnico.
 app.MapOpenApi();
@@ -62,6 +65,7 @@ app.MapScalarApiReference("/docs", options => options.WithTitle("Orders API"));
 
 app.MapOrdersHealthChecks();
 app.MapOrderEndpoints();
+app.MapAiEndpoints();
 app.MapHub<OrdersHub>(OrdersHub.Path);
 
 await app.RunAsync();
