@@ -43,6 +43,8 @@ RUN dotnet ef migrations bundle \
 
 # ---------- runtime ----------
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-alpine AS runtime
+# krb5-libs: o Npgsql tenta carregar a GSSAPI ao conectar; sem ela, loga erro (inofensivo) a cada boot.
+RUN apk add --no-cache krb5-libs
 WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=8080 \
     DOTNET_RUNNING_IN_CONTAINER=true

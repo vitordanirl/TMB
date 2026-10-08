@@ -2,6 +2,7 @@ import { Package } from 'lucide-react'
 import { Link, Outlet } from 'react-router'
 import { Toaster } from 'sonner'
 import { useOrderStatusNotifications } from '@/features/orders/useOrderStatusNotifications'
+import { RealtimeIndicator } from '@/realtime/RealtimeIndicator'
 
 export function Layout() {
   useOrderStatusNotifications()
@@ -16,6 +17,7 @@ export function Layout() {
             </span>
             Gestão de Pedidos
           </Link>
+          <RealtimeIndicator />
         </div>
       </header>
 

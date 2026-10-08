@@ -16,8 +16,8 @@ Para personalizar portas/credenciais, copie `cp .env.example .env`, ajuste e rod
 
 | Serviço | URL | Observação |
 |---|---|---|
-| **Frontend** | http://localhost:3000 | lista, criação e detalhes dos pedidos |
-| API | http://localhost:8080 | `/orders`, `/health/live`, `/health/ready` |
+| **Frontend** | http://localhost:3000 | lista, criação e detalhes dos pedidos (status em tempo real) |
+| API | http://localhost:8080 | `/orders`, `/hubs/orders` (SignalR), `/health/live`, `/health/ready` |
 | Documentação da API | http://localhost:8080/docs | Scalar (OpenAPI em `/openapi/v1.json`) |
 | RabbitMQ Management | http://localhost:15672 | usuário/senha: `RABBITMQ_USER` / `RABBITMQ_PASSWORD` |
 | pgAdmin | http://localhost:5050 | sem login; servidor "Orders" já registrado |

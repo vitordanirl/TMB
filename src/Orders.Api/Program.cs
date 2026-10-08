@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Orders.Api.ErrorHandling;
 using Orders.Api.Features.Orders;
+using Orders.Api.Realtime;
 using Orders.Infrastructure;
 using Orders.Infrastructure.Health;
 using Orders.Infrastructure.Messaging;
@@ -15,12 +16,19 @@ var connectionString = builder.Configuration.GetRequiredConnectionString("Orders
 var rabbitMqConnectionString = builder.Configuration.GetRequiredConnectionString("RabbitMq");
 
 builder.Services.AddOrdersPersistence(connectionString);
-builder.Services.AddOrdersMessaging(rabbitMqConnectionString);
+builder.Services.AddOrdersMessaging(rabbitMqConnectionString, bus =>
+    bus.AddConsumer<OrderNotificationsConsumer>(typeof(OrderNotificationsConsumerDefinition)));
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddSignalR().AddJsonProtocol(options =>
+{
+    options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 builder.Services.AddValidation();
@@ -48,5 +56,6 @@ app.MapScalarApiReference("/docs", options => options.WithTitle("Orders API"));
 
 app.MapOrdersHealthChecks();
 app.MapOrderEndpoints();
+app.MapHub<OrdersHub>(OrdersHub.Path);
 
 await app.RunAsync();

@@ -6,6 +6,7 @@ import { NewOrderPage } from '@/pages/NewOrderPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { OrderDetailsPage } from '@/pages/OrderDetailsPage'
 import { OrdersPage } from '@/pages/OrdersPage'
+import { RealtimeProvider } from '@/realtime/RealtimeProvider'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,7 +35,9 @@ const router = createBrowserRouter([
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <RealtimeProvider>
+        <RouterProvider router={router} />
+      </RealtimeProvider>
     </QueryClientProvider>
   )
 }

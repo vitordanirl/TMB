@@ -8,6 +8,12 @@ namespace Orders.Infrastructure.Messaging;
 public static class MessagingExtensions
 {
     /// <summary>
+    /// Prefixo de endpoints que apenas repassam eventos (ex.: para clientes SignalR): não gravam no banco,
+    /// então dispensam Outbox/Inbox. Duplicatas são inofensivas (o cliente aplica o mesmo estado).
+    /// </summary>
+    public const string NotificationEndpointPrefix = "notifications-";
+
+    /// <summary>
     /// Configura MassTransit sobre RabbitMQ com Transactional Outbox/Inbox no PostgreSQL.
     /// </summary>
     /// <param name="services">Coleção de serviços.</param>
@@ -34,7 +40,7 @@ public static class MessagingExtensions
                 outbox.DuplicateDetectionWindow = TimeSpan.FromHours(1);
             });
 
-            bus.AddConfigureEndpointsCallback((context, _, endpoint) =>
+            bus.AddConfigureEndpointsCallback((context, name, endpoint) =>
             {
                 // A retentativa fica fora do outbox: cada tentativa usa um escopo/transação novo.
                 endpoint.UseMessageRetry(retry =>
@@ -42,7 +48,11 @@ public static class MessagingExtensions
                     retry.Exponential(5, TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(500));
                     retry.Ignore<DomainException>();
                 });
-                endpoint.UseEntityFrameworkOutbox<OrdersDbContext>(context);
+
+                if (!name.StartsWith(NotificationEndpointPrefix, StringComparison.Ordinal))
+                {
+                    endpoint.UseEntityFrameworkOutbox<OrdersDbContext>(context);
+                }
             });
 
             configure?.Invoke(bus);
