@@ -1,6 +1,7 @@
 using Orders.Infrastructure;
 using Orders.Infrastructure.Health;
 using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Observability;
 using Orders.Worker.Processing;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.AddOrdersObservability("orders-worker");
 builder.Services.AddOrdersPersistence(ordersConnectionString);
 builder.Services.AddOrdersMessaging(rabbitMqConnectionString, bus =>
 {

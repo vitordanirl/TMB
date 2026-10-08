@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Orders.Contracts;
 using Orders.Domain.Orders;
 using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Observability;
 using Orders.Infrastructure.Persistence;
 
 namespace Orders.Worker.Processing;
@@ -24,6 +25,7 @@ public sealed partial class CompleteOrderProcessingConsumer(
     public async Task Consume(ConsumeContext<CompleteOrderProcessing> context)
     {
         var orderId = context.Message.OrderId;
+        OrderTelemetry.TagOrder(orderId);
 
         var remaining = context.Message.ProcessAt - clock.GetUtcNow();
         if (remaining > TimeSpan.Zero)
@@ -46,6 +48,7 @@ public sealed partial class CompleteOrderProcessingConsumer(
         }
 
         var transition = order.TransitionTo(OrderStatus.Finalizado, clock.GetUtcNow());
+        OrderTelemetry.TagOrder(orderId, transition.ToStatus);
 
         await context.Publish(transition.ToStatusChangedEvent(), context.CancellationToken);
         await db.SaveChangesAsync(context.CancellationToken);

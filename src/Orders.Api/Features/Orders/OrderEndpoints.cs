@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Orders.Domain.Orders;
 using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Observability;
 using Orders.Infrastructure.Persistence;
 
 namespace Orders.Api.Features.Orders;
@@ -44,6 +45,7 @@ public static class OrderEndpoints
         var order = Order.Create(request.Cliente!, request.Produto!, request.Valor!.Value, clock.GetUtcNow());
 
         db.Orders.Add(order);
+        OrderTelemetry.TagOrder(order.Id, order.Status);
 
         // Bus Outbox: a mensagem é gravada na tabela outbox_message e commitada junto com o pedido
         // em SaveChanges; um serviço em background a entrega ao RabbitMQ. Sem pedido órfão nem mensagem perdida.

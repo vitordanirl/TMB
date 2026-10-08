@@ -6,6 +6,7 @@ using Orders.Api.Realtime;
 using Orders.Infrastructure;
 using Orders.Infrastructure.Health;
 using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Observability;
 using Scalar.AspNetCore;
 
 const string CorsPolicy = "frontend";
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetRequiredConnectionString("Orders");
 var rabbitMqConnectionString = builder.Configuration.GetRequiredConnectionString("RabbitMq");
 
+builder.AddOrdersObservability("orders-api");
 builder.Services.AddOrdersPersistence(connectionString);
 builder.Services.AddOrdersMessaging(rabbitMqConnectionString, bus =>
     bus.AddConsumer<OrderNotificationsConsumer>(typeof(OrderNotificationsConsumerDefinition)));

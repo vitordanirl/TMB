@@ -28,6 +28,8 @@ public static class MessagingExtensions
 
         services.AddMassTransit(bus =>
         {
+            // O MassTransit 8.3+ envia telemetria de uso a usage-tracking.masstransit.io por padrão.
+            bus.DisableUsageTelemetry();
             bus.SetKebabCaseEndpointNameFormatter();
 
             // Outbox: mensagens publicadas são gravadas na mesma transação do DbContext e

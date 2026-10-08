@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Orders.Contracts;
 using Orders.Domain.Orders;
 using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Observability;
 using Orders.Infrastructure.Persistence;
 
 namespace Orders.Worker.Processing;
@@ -29,6 +30,8 @@ public sealed partial class OrderCreatedConsumer(
     public async Task Consume(ConsumeContext<OrderCreated> context)
     {
         var orderId = context.Message.OrderId;
+        OrderTelemetry.TagOrder(orderId);
+
         var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId, context.CancellationToken);
 
         if (order is null)
@@ -45,6 +48,7 @@ public sealed partial class OrderCreatedConsumer(
 
         var now = clock.GetUtcNow();
         var transition = order.TransitionTo(OrderStatus.Processando, now);
+        OrderTelemetry.TagOrder(orderId, transition.ToStatus);
 
         await context.Publish(transition.ToStatusChangedEvent(), context.CancellationToken);
         var completionEndpoint = await context.GetSendEndpoint(CompleteOrderProcessingQueue);

@@ -19,9 +19,12 @@ Para personalizar portas/credenciais, copie `cp .env.example .env`, ajuste e rod
 | **Frontend** | http://localhost:3000 | lista, criação e detalhes dos pedidos (status em tempo real) |
 | API | http://localhost:8080 | `/orders`, `/hubs/orders` (SignalR), `/health/live`, `/health/ready` |
 | Documentação da API | http://localhost:8080/docs | Scalar (OpenAPI em `/openapi/v1.json`) |
+| Jaeger (tracing) | http://localhost:16686 | serviços `orders-api` e `orders-worker`; filtre por tag `order.id=<id>` |
 | RabbitMQ Management | http://localhost:15672 | usuário/senha: `RABBITMQ_USER` / `RABBITMQ_PASSWORD` |
 | pgAdmin | http://localhost:5050 | sem login; servidor "Orders" já registrado |
 | PostgreSQL | localhost:5432 | credenciais `POSTGRES_*` do `.env` |
+
+Um único trace cobre o fluxo inteiro de um pedido: `POST /orders` → Outbox → RabbitMQ → worker (Processando) → worker (Finalizado) → notificações SignalR, incluindo os comandos SQL. Os logs incluem `TraceId`, permitindo ir do log ao trace.
 
 Ordem de subida (garantida por healthchecks): `postgres` + `rabbitmq` → `migrator` (aplica as migrations e encerra) → `api` + `worker` → `web`.
 
