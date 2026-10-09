@@ -1,0 +1,26 @@
+﻿{
+  id: Guid_1,
+  cliente: Golden,
+  produto: Detalhes,
+  valor: 99.9,
+  status: Finalizado,
+  data_criacao: DateTimeOffset_1,
+  data_atualizacao: DateTimeOffset_2,
+  historico: [
+    {
+      status_anterior: null,
+      status_novo: Pendente,
+      ocorrido_em: DateTimeOffset_1
+    },
+    {
+      status_anterior: Pendente,
+      status_novo: Processando,
+      ocorrido_em: DateTimeOffset_3
+    },
+    {
+      status_anterior: Processando,
+      status_novo: Finalizado,
+      ocorrido_em: DateTimeOffset_2
+    }
+  ]
+}

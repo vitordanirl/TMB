@@ -1,0 +1,16 @@
+﻿{
+  type: https://tools.ietf.org/html/rfc9110#section-15.5.1,
+  title: Um ou mais campos são inválidos.,
+  status: 400,
+  errors: {
+    cliente: [
+      Campo obrigatório.
+    ],
+    produto: [
+      Campo obrigatório.
+    ],
+    valor: [
+      Deve ser maior que zero e ter no máximo 16 dígitos inteiros.
+    ]
+  }
+}
