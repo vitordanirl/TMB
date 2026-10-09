@@ -84,7 +84,7 @@ services:
       Cors__AllowedOrigins__1: http://localhost:5173
       # Módulo de IA (opcional): sem a chave, /ai/ask responde 503 e o frontend orienta a configuração.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      Ai__Model: ${AI_MODEL:-claude-opus-5-5}
+      Ai__Model: ${AI_MODEL:-claude-haiku-5-5}
       Ai__Effort: ${AI_EFFORT:-low}
     ports:
       - "${API_PORT:-8080}:8080"

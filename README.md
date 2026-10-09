@@ -19,13 +19,14 @@ Sistema para criar, listar e acompanhar pedidos. Cada pedido criado é publicado
 
 ## Como rodar
 
-Pré-requisito: **Docker Desktop** (ou Docker Engine + Compose v2). Um único comando sobe tudo:
+Pré-requisito: **Docker Desktop** (ou Docker Engine + Compose v2). Crie o seu arquivo `.env` a partir do modelo e depois suba tudo com um único comando:
 
 ```bash
-docker compose --env-file .env.example up -d --build
+cp .env.example .env
+docker compose up -d --build
 ```
 
-Para personalizar portas e credenciais, copie `.env.example` para `.env`, ajuste e rode `docker compose up -d --build`. Na primeira execução o build das imagens leva alguns minutos.
+O `.env` não é versionado (está no `.gitignore`) e é onde ficam as credenciais, incluindo a chave da IA. Os valores do `.env.example` servem para desenvolvimento local. Na primeira execução o build das imagens leva alguns minutos.
 
 | Serviço | URL | |
 |---|---|---|
@@ -127,7 +128,7 @@ Detalhes, com diagramas de sequência, modelo de dados, garantias de mensageria 
 | **nginx na frente da SPA** | Mesma origem para `/api` e `/hubs` (sem CORS), cache de assets e falha rápida se a API cair. |
 | **OpenTelemetry + Jaeger** | Padrão aberto. O contexto W3C viaja nos headers das mensagens, o que dá um trace contínuo entre API, broker e worker. |
 | **Testcontainers + Verify** | Testes com PostgreSQL e RabbitMQ reais em containers descartáveis. Os golden tests detectam qualquer mudança de contrato (API, OpenAPI e mensagens). |
-| **Claude (Anthropic) com tool use** | A IA escolhe ferramentas tipadas e validadas em vez de gerar SQL, o que é mais seguro e dá respostas baseadas em dados reais. Modelo `claude-opus-5-5`, configurável. |
+| **Claude (Anthropic) com tool use** | A IA escolhe ferramentas tipadas e validadas em vez de gerar SQL, o que é mais seguro e dá respostas baseadas em dados reais. Modelo `claude-haiku-5-5`, configurável. |
 | **Docker Compose** | Um comando sobe o ambiente completo. Imagens Alpine multi-stage, executadas como usuário não-root. |
 
 ## API
@@ -195,7 +196,7 @@ A **CI** (GitHub Actions) roda build com warnings como erro, todos os testes .NE
 Requer .NET SDK 10 e Node.js 20+. Suba só a infraestrutura com o Compose e rode as aplicações pelo SDK:
 
 ```bash
-docker compose --env-file .env.example up -d postgres rabbitmq migrator jaeger
+docker compose up -d postgres rabbitmq migrator jaeger
 
 export ConnectionStrings__Orders="Host=localhost;Port=5432;Database=orders;Username=orders;Password=orders_dev_password"
 export ConnectionStrings__RabbitMq="amqp://orders:orders_dev_password@localhost:5672/"
@@ -222,7 +223,7 @@ Definidas em `.env` (modelo em [`.env.example`](.env.example)). O Compose falha 
 | `RABBITMQ_USER` / `RABBITMQ_PASSWORD` | `orders` / `orders_dev_password` | Broker (usados numa URI AMQP: evite caracteres especiais) |
 | `PGADMIN_EMAIL` / `PGADMIN_PASSWORD` | `admin@example.com` / `admin_dev_password` | pgAdmin |
 | `ANTHROPIC_API_KEY` | vazio | Habilita o módulo de IA |
-| `AI_MODEL` / `AI_EFFORT` | `claude-opus-5-5` / `low` | Modelo e esforço de raciocínio da IA |
+| `AI_MODEL` / `AI_EFFORT` | `claude-haiku-5-5` / `low` | Modelo e esforço de raciocínio da IA |
 | `ORDER_COMPLETION_DELAY` | `00:00:05` | Tempo entre Processando e Finalizado |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | Ambiente das aplicações .NET |
 | `API_PORT`, `WEB_PORT`, `POSTGRES_PORT`, `RABBITMQ_PORT`, `RABBITMQ_MANAGEMENT_PORT`, `PGADMIN_PORT`, `JAEGER_UI_PORT` | `8080`, `3000`, `5432`, `5672`, `15672`, `5050`, `16686` | Portas expostas no host |
@@ -231,7 +232,7 @@ Definidas em `.env` (modelo em [`.env.example`](.env.example)). O Compose falha 
 
 | Sintoma | Causa provável e solução |
 |---|---|
-| `required variable ... is missing a value` | Falta o `.env`. Use `--env-file .env.example` ou copie o arquivo de exemplo. |
+| `required variable ... is missing a value` | Falta o `.env`. Crie o `.env` com `cp .env.example .env`. |
 | `port is already allocated` | Porta em uso no host (ex.: um PostgreSQL local na 5432). Altere a porta correspondente no `.env`. |
 | Indicador "Atualização periódica" no frontend | A conexão SignalR não está ativa; a tela segue atualizando por polling e reconecta sozinha. Veja `docker compose logs api`. |
 | Pedidos ficam em "Pendente" | Worker fora do ar: `docker compose ps worker` e `docker compose logs worker`. Mensagens com falha ficam nas filas `*_error` do RabbitMQ. |

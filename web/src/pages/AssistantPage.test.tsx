@@ -37,7 +37,7 @@ describe('AssistantPage', () => {
 
   it('envia uma pergunta de exemplo e mostra a resposta com as consultas realizadas', async () => {
     const { user, fetchMock } = setup({
-      '/ai/status': () => json(200, { habilitado: true, modelo: 'claude-opus-5-5' }),
+      '/ai/status': () => json(200, { habilitado: true, modelo: 'claude-haiku-5-5' }),
       '/ai/ask': () =>
         json(200, {
           resposta: 'Há 3 pedidos pendentes.',
@@ -58,7 +58,7 @@ describe('AssistantPage', () => {
 
   it('mostra mensagem amigável quando o limite de perguntas é atingido', async () => {
     const { user } = setup({
-      '/ai/status': () => json(200, { habilitado: true, modelo: 'claude-opus-5-5' }),
+      '/ai/status': () => json(200, { habilitado: true, modelo: 'claude-haiku-5-5' }),
       '/ai/ask': () => json(429, { title: 'Too Many Requests', status: 429 }),
     })
 

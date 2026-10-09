@@ -10,7 +10,7 @@ public sealed class AiOptions
     public string? ApiKey { get; set; }
 
     [Required]
-    public string Model { get; set; } = "claude-opus-5-5";
+    public string Model { get; set; } = "claude-haiku-5-5";
 
     /// <summary>Esforço de raciocínio (low, medium, high, xhigh, max). Perguntas objetivas sobre dados funcionam bem em "low".</summary>
     [Required]

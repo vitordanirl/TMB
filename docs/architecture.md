@@ -230,7 +230,7 @@ sequenceDiagram
 - Datas relativas ("hoje", "este mês") são interpretadas no fuso `America/Sao_Paulo`.
 - "Tempo para aprovar" é calculado pelo histórico de status (criação → Finalizado), agregado no PostgreSQL.
 - Proteções: limite de tamanho da pergunta, limite de rodadas de ferramentas, rate limit por IP e módulo desativado sem `ANTHROPIC_API_KEY`.
-- Modelo `claude-opus-5-5` (configurável) com esforço `low` e fallback do lado do servidor para recusas de segurança.
+- Modelo `claude-haiku-5-5` (configurável) com esforço `low` e fallback do lado do servidor para recusas de segurança.
 
 ## Observabilidade
 

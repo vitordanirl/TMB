@@ -59,7 +59,7 @@ public sealed class FakeAnthropicHandler : HttpMessageHandler
             ["id"] = $"msg_{_responses.Count + Requests.Count + 1:00}",
             ["type"] = "message",
             ["role"] = "assistant",
-            ["model"] = "claude-opus-5-5",
+            ["model"] = "claude-haiku-5-5",
             ["content"] = content,
             ["stop_reason"] = stopReason,
             ["stop_sequence"] = null,
